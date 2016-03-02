@@ -5,16 +5,17 @@ __date__ = ''
 __author__ = 'andreyteterevkov'
 
 
-from grab import Grab
+from grab import Grab, GrabError
 import re
 import urllib
 import url_parsing
-import xmltodict
-import json
+
+
+
 
 grab = Grab()
-grab.go('https://www.youtube.com/watch?v=pnnDz1DBUKo')
 
+grab.go('http://www.youtube.com/watch?v=fsCFMHfLJig')
 p = re.compile(ur'caption_tracks":\"(.*?)\"', re.IGNORECASE | re.DOTALL)
 for script in grab.doc.select('//script').text_list():
     if 'ytplayer.config' in script:
@@ -28,9 +29,14 @@ for script in grab.doc.select('//script').text_list():
         except:
             pass
 
-        grab.go(url)
+            grab.go(url.replace('&v=.en', ''))
 
-        o = xmltodict.parse(grab.doc.select('//*').html())
-        print json.dumps(o)
-
-
+            try:
+                html = grab.doc.select('//*').html()
+                if '<p><b>404.</b> <ins>That' not in html:
+                    print html
+                    break
+                else:
+                    print '404 Error'
+            except Exception as e:
+                print e
